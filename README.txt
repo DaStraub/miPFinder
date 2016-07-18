@@ -5,20 +5,15 @@ MiPFinder starts with a set of protein sequences and considers information about
 
 This version (v1) was published.
 
-the algorithm is available under the GPLv3 licence at https://github.com/DaStraub/miPFinder
+The algorithm is available under the GPLv3 licence at https://github.com/DaStraub/miPFinder
 
 GENERAL INFORMATION
 
 The miPFinder program takes a single command line in the windows command prompt (e.g. “python miPFinder.py -f proteins.fasta -p ProteinGeneList.tsv -a annotation.tsv”). 
 The minimum input requirement is a simple fasta file with all protein sequences (“-f”), however a file with protein annotations (“-a”) will aid the miP selection tremendously. 
 For the addition of protein-protein interaction domain information, a Pfam domain database (“-d”) and a file specifying interaction domains (“-i”) is necessary. 
-Moreover, a file specifying the protein-gene-relationship (“-p”) will allow for cis-miP detection, for filtering putative ancestors for their longest splice variant, 
-and for the removal of redundant miP candidate splice variants. Parameters for the maximal miP and minimum ancestor length can be adjusted (“-M” and “-A”, respectively, 
-standard setting: 140 and 250) as well as all cutoff values.
-miPFinder is built with Python v2.7.9 running on Microsoft Windows 7 and using hmmer v3.1b1, blast+ v2.2.29, clustalw v2.1, but any python2, hmmer3, blast2, clustalw2 and 
-Microsoft Windows version might be sufficient. Path to the dependencies (hmmer, blast, clustalw2) must be specified, if the accessory programs are not set as environment 
-variables, using command line arguments “-H”,”-B”,”-C”, respectively. MipFinder will check the availability of specified input files and correct function of all dependencies 
-before each run.
+Moreover, a file specifying the protein-gene-relationship (“-p”) will allow for cis-miP detection, for filtering putative ancestors for their longest splice variant, and for the removal of redundant miP candidate splice variants. Parameters for the maximal miP and minimum ancestor length can be adjusted (“-M” and “-A”, respectively, standard setting: 140 and 250) as well as all cutoff values.
+miPFinder is built with Python v2.7.9 running on Microsoft Windows 7 and using hmmer v3.1b1, blast+ v2.2.29, clustalw v2.1, but any python2, hmmer3, blast2, clustalw2 and Microsoft Windows version might be sufficient. Path to the dependencies (hmmer, blast, clustalw2) must be specified, if the accessory programs are not set as environment variables, using command line arguments “-H”,”-B”,”-C”, respectively. MipFinder will check the availability of specified input files and correct function of all dependencies before each run.
 For further information about input requirements and data sources see below.
 
 DETAILED INPUT
@@ -114,4 +109,4 @@ Can be helpful for trouble shooting in case of program failure.
 
 CITATION
 
-Straub, D; Wenkel, S: "Cross-species genome-wide identification of evolutionary conserved microProteins."
+Daniel Straub, Stephan Wenkel: Cross-species genome-wide identification of evolutionary conserved microProteins. bioRxiv 061655; doi: http://dx.doi.org/10.1101/061655 
