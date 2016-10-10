@@ -220,3 +220,26 @@ def readDOMTBL(data,ProteinGeneList,fastasplit,fastadb,evalueCUTOFF,cvalueCUTOFF
     print 'found',len(tempreturn[0]),'queries with hits in domains'
     return tempreturn
 
+def readSTRING(STRINGfile,tabnumber,minscore):
+	interactions = [[],[]]
+	count = 0
+	Input = open(STRINGfile,'r')
+	countfiltered = 0
+	for line in Input.xreadlines():
+		count+= 1
+		line = line.replace('\n','')
+		def cut(ID):
+			ID = ID.split('.')
+			ID = ('.'.join(ID[1:]))
+			return ID
+		splitline = line.split(' ')
+		if not line.startswith('protein1'): 
+			if int(splitline[tabnumber]) >= minscore:
+				countfiltered+= 1
+				interactions[0].append(cut(splitline[0]))
+				interactions[1].append(cut(splitline[1]))
+				interactions[0].append(cut(splitline[1]))
+				interactions[1].append(cut(splitline[0]))
+	Input.close()
+	print 'found',count,'lines in',STRINGfile, 'and',countfiltered,'passed filter: column',tabnumber,'>=', minscore
+	return interactions

@@ -25,6 +25,7 @@ python miPFinder_v1.py -f FASTA.fasta [DEPENDENCIES, DATABASES, OTHER VARIABLES]
 
 -- Sequence file ('-f', '--fasta')
 FASTA file of all proteins, recommended: http://www.phytozome.net, http://www.ensembl.org/, ftp://ftp.ncbi.nlm.nih.gov/refseq ->protein.faa files
+All additional files (such as -S, -p, -a, -l) have to have the same sequence identifier as this fasta file.
 
 - DEPENDENCIES
 
@@ -41,6 +42,9 @@ Path/to/hmmsearch-folder/, available at http://hmmer.org/'
 Expects "hmmsearch.exe", "hmmbuild.exe" and "hmmscan.exe".
 
 - DATABASES
+
+-- STRING database ('-S', '--STRING')
+STRING: STRING v10 database, e.g. for Arabidopsis 3702.protein.links.detailed.v10.txt, available at http://string-db.org/cgi/download.pl'.
 
 -- PFAM database ('-d', '--PfamA')
 Pfam database in .hmm format, e.g. Pfam-A_v28.hmm, available at ftp://ftp.ebi.ac.uk/pub/databases/Pfam/'.
@@ -74,6 +78,8 @@ known miPs = 'AT5G39860.1;AT1G26945.1;AT5G15160.1;AT3G28857.1;AT1G74500.1;AT3G47
 -- Maximum length of a microProtein in aminoacids ('-M', '--maxMIPlength', default=140).
 -- Minimum length of a microProtein ancestor in aminoacids ('-A', '--minANCESTORlength', default=250).
 -- E-value cutoff for Blast search ('-L', '--blastCUTOFF', default=1e-3).
+-- STRINGcolumn: Column in STRING file that is compared to STRINGminscore. STRING v10: 2=neighborhood, 3=fusion, 4=cooccurence, 5=coexpression, 6=experimental, 7=database, 8=textmining, 9=combined_score ('-c', '--STRINGcolumn', default=9).
+-- STRINGminscore: Minimum score in STRING file in column STRINGcolumn. E.g. 900= very high confidence, 700=high confidence, 400=medium confidence, 150=low confidence ('-e', '--STRINGminscore', default=400).
 -- Pfam domains: minimum overlap of a microProtein with an annotated domain ('-O', '--overlapCUTOFF', default=0.6).
 -- E-value cutoff for HMMscan and HMMsearch ('-E', '--evalueCUTOFF', default=0.1).
 -- c-Evalue cutoff for HMMscan and HMMsearch ('-V', '--cvalueCUTOFF', default=0.05).

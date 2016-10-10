@@ -62,23 +62,26 @@ def isFloat(string):
 print '\n'
 parser = argparse.ArgumentParser(
 description='MiPFinder v1 - a script to produce a list enriched in microProteins. - Straub, D; Wenkel, S (2016): \"Cross-species genome-wide identification of evolutionary conserved microProteins.\"',
-epilog='Only -f is required, however, if blast/clustalw/hmmer are not in evironment variables, -B/-C/-H are required too.\nDefault values are in round brackets.')
-parser.add_argument('-f', '--fasta', dest='fastadb', help='fasta file of all proteins, recommended: http://www.phytozome.net, http://www.ensembl.org/, ftp://ftp.ncbi.nlm.nih.gov/refseq ->protein.faa files', required=True, type=isFile)
+epilog='Only -f is required, however, if blast/clustalw/hmmer are not in evironment variables, -B/-C/-H are required too. Specify path using "/" instead of "\\". \nDefault values are in round brackets.')
+parser.add_argument('-f', '--fasta', dest='fastadb', help='fasta file of all proteins, must be in the working directory! Recommended: http://www.phytozome.net, http://www.ensembl.org/, ftp://ftp.ncbi.nlm.nih.gov/refseq ->protein.faa files', required=True, type=isFile)
 parser.add_argument('-s', '--species', dest='species', default='NA', help='Prefix for output files [string] (NA)')
 parser.add_argument('-p', '--ProteinGeneList', dest='ProteinGeneList', help='List of identifiers of protein and genes. column1: protein_id, column2: gene_id; tab separated', type=isFile)
 parser.add_argument('-a', '--annotation', dest='annotationdb', help='Annotation file for fasta file. column1: protein_id, column2: description; tab separated', type=isFile)
 parser.add_argument('-m', '--hmmscanDB', dest='hmmscandb', help='Domain annotation file hmmscan, is created if not specified', type=isFile)
 parser.add_argument('-B', '--blast', dest='blastPATH', default='', help='path/to/blast-folder/, available at ftp://ftp.ncbi.nih.gov/blast/executables/blast+/', type=isBlast) 
 parser.add_argument('-C', '--clustalw', dest='ClustalPATH', default='', help='path/to/clustalw2-folder/, available at http://www.clustal.org/clustal2/', type=isClustal) 
-parser.add_argument('-H', '--hmm', dest='hmmPATH', default='', help='path/to/hmmsearch-folder/, available at http://hmmer.org/', type=isHmmer) 
+parser.add_argument('-H', '--hmm', dest='hmmPATH', default='', help='path/to/hmmsearch-folder/, available at http://hmmer.org/', type=isHmmer)
+parser.add_argument('-S', '--STRING', dest='STRINGdb', help='STRING v10 detailed protein interaction file. XXXX.protein.links.detailed.v10.txt, available at http://string-db.org/cgi/download.pl', type=isFile)
 parser.add_argument('-d', '--PfamA', dest='PfamAdb', help='Pfam-database.hmm, available at ftp://ftp.ebi.ac.uk/pub/databases/Pfam/', type=isFile)
 parser.add_argument('-i', '--iPfam', dest='iPfamdb', help='iPfam-database.tsv, available at http://www.ipfam.org/. Merge homodomain and heterodomain interaction file.', type=isFile)
 parser.add_argument('-M', '--maxMIPlength', dest='miPmaxlength', default=140, help='Maximum length of a microProtein in aminoacids [integer] (140)', type=isInt) 
 parser.add_argument('-A', '--minANCESTORlength', dest='ancestorminlength', default=250, help='Minimum length of a microProtein ancestor in aminoacids [integer] (250)', type=isInt) 
 parser.add_argument('-L', '--blastCUTOFF', dest='blastCUTOFF', default=1e-3, help='E-value cutoff for Blast search [0-1, float] (1e-3)', type=isFloat) 
-parser.add_argument('-O', '--overlapCUTOFF', dest='overlapCUTOFF', default=0.6, help='Pfam domains: minimum overlap of a microProtein with an annotated domain [0-1, float] (0.6)', type=isFloat) 
+parser.add_argument('-O', '--overlapCUTOFF', dest='overlapCUTOFF', default=0.6, help='Pfam domains: minimum overlap of a microProtein with an annotated domain; 0.5=miP matches at least half the domain, [0-1, float] (0.6)', type=isFloat) 
 parser.add_argument('-E', '--evalueCUTOFF', dest='evalueCUTOFF', default=0.1, help='E-value cutoff for HMMscan and HMMsearch [0-1, float] (0.1)', type=isFloat) 
 parser.add_argument('-V', '--cvalueCUTOFF', dest='cvalueCUTOFF', default=0.05, help='c-Evalue cutoff for HMMscan and HMMsearch [0-1, float] (0.05)', type=isFloat)
+parser.add_argument('-c', '--STRINGcolumn', dest='STRINGcolumn', default=9, help='Column in STRING v10 file that is compared to STRINGminscore. E.g. 9=combined score, 6=experimental, 8=textmining; [2-9, integer] (9)', type=isInt)
+parser.add_argument('-e', '--STRINGminscore', dest='STRINGminscore', default=400, help='Minimum score in STRING v10 file in column STRINGcolumn. E.g. 700=high confidence, 400=medium confidence; [0-1000, integer] (400)', type=isInt)
 knownMIP = 'AT5G39860.1;AT1G26945.1;AT5G15160.1;AT3G28857.1;AT1G74500.1;AT3G47710.1;AT4G15248.1;AT3G21890.1;AT3G28917.1;AT1G74660.1;AT1G18835.1;AT1G14760.2;AT3G58850.1;AT2G42870.1;AT1G01380.1;AT2G30424.1;AT5G53200.1;AT2G30420.1;AT2G30432.1;AT2G46410.1;AT4G01060.1;AT3G52770.1'
 parser.add_argument('-l', '--IDlist', dest='IDlist', default=knownMIP, help='list of IDs that will be searched against miP candidate protein IDs and reported in the final result table [string, semicolon-separated list] (22 known Ath miPs)') 
 args = vars(parser.parse_args())
@@ -94,7 +97,7 @@ species = args['species']
 
 ProteinGeneListName = args['ProteinGeneList']
 if ProteinGeneListName == None:
-	print '\nWARNING: Will not add gene-protein relations\nRecommended: specify -p ProteinGeneList.tsv'
+	print '\nWARNING: Will not consider gene-protein relations\nRecommended: specify -p ProteinGeneList.tsv'
 
 annotationdb = args['annotationdb']
 if annotationdb == None:
@@ -110,7 +113,10 @@ if hmmscandb == None and PfamAdbPATH == None:
 		
 iPfamdbPATH = args['iPfamdb']
 if iPfamdbPATH == None:
-	print '\nWARNING: No iPfam database specified, will not add domain interaction information\nRecommended: specify -i iPfam-database.tsv'	
+	print '\nWARNING: iPfam database not specified, will not add domain interaction information\nRecommended: specify -i iPfam-database.tsv'	
+	
+if args['STRINGdb'] == None:
+	print '\nWARNING: STRING database not specified, will not add interaction information\nRecommended: specify -S STRING-database.txt'	
 
 blastPATH = '\"'+args['blastPATH']+'\"'
 hmmsearchPATH = '\"'+args['hmmPATH']+'hmmsearch.exe\"'
@@ -141,7 +147,7 @@ sys.path.append(currentPATH+'/scripts')
 from alignments_v13 import ALIGNMENTRATING
 from splicevariants_v13 import splicevariantsSEQ
 from splitdb_v13 import splitdb
-from read_v13 import readAnnotation, readFasta, readBlastTAB, readProteinGeneList, readiPfam, readDOMTBL
+from read_v13 import readAnnotation, readFasta, readBlastTAB, readProteinGeneList, readiPfam, readDOMTBL, readSTRING
 from delta_v13 import percentsmall, percentZones
 from domains_v13 import domains, domainOverlap
 
@@ -419,6 +425,27 @@ def checkCISmip(mip,anc,List):
         if temp == []:
                 temp.append('n')
         return temp
+		
+def addSTRING(mipinput,ancinput,interactions):
+	miphits = set(interactions[0]).intersection(mipinput)
+	anchits = ''
+	if len(miphits) > 0:#if hit in miPs
+		anchit = []
+		for hit in miphits:
+			for j in range(len(interactions[0])):
+				if interactions[0][j] == hit:
+					anchit.append(interactions[1][j])
+		if len(set(anchit).intersection(ancinput)) > 0:#if hits in ancestors
+			anchits = (';'.join(set(anchit).intersection(ancinput)))
+			
+	temp = ''
+	if len(anchits) > 0:
+		temp = 'y\t'
+		temp+= ';'.join(miphits)+'\t'
+		temp+= anchits
+	else:
+		temp = 'n\t\t'
+	return temp
 
 #######USE FUNCTIONS##################################################
 
@@ -429,6 +456,8 @@ if ProteinGeneListName != None:
 	ProteinGeneList = readProteinGeneList(ProteinGeneListName,fastasplit)
 else:
 	ProteinGeneList = makeProteinGeneList(fastadb[0])
+if args['STRINGdb'] != None:
+	STRINGinteractions = readSTRING(args['STRINGdb'],int(args['STRINGcolumn']),int(args['STRINGminscore']))
 if iPfamdbPATH != None:
 	iPfamDB = readiPfam(iPfamdbPATH)#[Pfam]
 else:
@@ -440,6 +469,7 @@ if PfamAdbPATH != None and os.path.isfile(hmmscandb) == False:
 	subprocess.check_output(('del hmmscan_terminal.txt'), shell=True)
 if hmmscandb != None and os.path.isfile(hmmscandb) == True:
 	domainsDB = domains(hmmscandb,HMMsearchDATABASE,fastasplit,evalueCUTOFF,cvalueCUTOFF,hmmscanPATH)
+
 
 blastdb = readBlastTAB(blastdb,fastasplit)#[[queryAGI],[[hitAGIs]],[[evalues]],[[starts]],[[stops]]
 blastdb = evaluefilter(blastdb,blastCUTOFF)#[[queryAGI],[[hitAGIs]],[[starts]],[[stops]],[[evalues]]
@@ -593,7 +623,7 @@ outGROUP[6].extend(singledb[5])
 
 for i in range(len(outGROUP[1])):
         if len(outGROUP[1][i]) == 0:
-                print 'remove:'
+                print '\rERROR, remove:'
                 for j in range(len(outGROUP)):
                         print i,outGROUP[j][i]
                         outGROUP[j].pop([i])
@@ -606,6 +636,7 @@ headline = 'group\tmiP_ids\tnumber_of_miP_genes\tannotation\tancestor_pep_ids(ma
 headline+= 'miP-IDlist_intersection\talignment\talignment_block\talignment_rating\t'
 headline+= 'min_e-value\tcis_mip\t' #'min_evalue\tall_evalue\tcis_mip\t'
 headline+= '%_<='+str(miPmaxlength)+'\t%_'+str(miPmaxlength)+'<x<'+str(ancestorminlength)+'\t%_>='+str(ancestorminlength)+'\t'
+headline+= 'STRING\tmiP_interactor\tancestor_interactor\t'
 headline+= 'Pfam\tPfam_name\tis_interaction_domain\tnumber_of_Pfam_hits\n'
 output.write(headline)
 
@@ -632,8 +663,8 @@ for i in range(len(outGROUP[0])):
 		else:
 				line.append('not_annotated')
     else:
-			line.append('no annotation file specified')
-    line.append((';'.join(outGROUP[2][i][:25000])))#group_ancestors
+			line.append('annotation file not specified')
+    line.append((';'.join(outGROUP[2][i][:2500])))#group_ancestors
     ancGene = []
     for anc in outGROUP[2][i]:
             ancGene.append(ProteinGeneList[1][ProteinGeneList[0].index(anc)])
@@ -668,10 +699,15 @@ for i in range(len(outGROUP[0])):
 		temp = checkCISmip(outGROUP[1][i],outGROUP[2][i],ProteinGeneList)
 		line.append((';'.join(temp)))
     else:
-		line.append('no gene-protein relation file specified')	
+		line.append('gene-protein relation file not specified')	
 	#size distributions
     zones = percentZones(outGROUP[5][i],fastadb,miPmaxlength,ancestorminlength)
     line.append('\t'.join([str(z) for z in zones]))
+    #STRING interaction
+    if args['STRINGdb'] != None:
+		line.append(addSTRING(outGROUP[1][i],outGROUP[2][i],STRINGinteractions))
+    else:
+		line.append('STRING database not specified\t\t')
     #domain hit
     if hmmscandb != None and os.path.isfile(hmmscandb) == True:
 		domainhit = domainOverlap(outGROUP[0][i],outGROUP[2][i][:mostSIMILARcutoff],outGROUP[3][i][:mostSIMILARcutoff],outGROUP[4][i][:mostSIMILARcutoff],domainsDB,overlapCUTOFF,iPfamDB)
@@ -683,7 +719,7 @@ for i in range(len(outGROUP[0])):
 		else:        
 				line.append(str(len(domainhit[0])))
     else:
-		line.append('no Pfam database specified')
+		line.append('Pfam database file not specified')
     if line.count('no ancestor') == 0:
         output.write(('\t'.join(line)+'\n'))
     else:
@@ -691,7 +727,7 @@ for i in range(len(outGROUP[0])):
 output.close()
 checkforMIPs(allsmall,IDlist)
 
-print '\nthe file',outfile,'was created. For full functionality, paste the file contents into a MS Office Excel sheet (Windows) and keep it in the same folder like the \"alignment\" folder.'
+print '\nThe file',outfile,'was created. For full functionality, paste the file contents into a MS Office Excel sheet (Windows) and keep it in the same folder like the \"alignment\" folder.'
 
 endTIME = datetime.datetime.now()
 print '\nfinished:',endTIME,' ->total:',endTIME-startTIME
